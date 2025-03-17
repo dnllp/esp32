@@ -64,6 +64,40 @@ const char* htmlPage = R"=====(
 </body>
 </html>
 )=====";
+// Función para manejar la solicitud de la página principal
+void handleRoot() {
+  server.send(200, "text/html", htmlPage);
+}
+
+
+// Función que maneja los eventos del WebSocket
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  switch (type) {
+    case WStype_DISCONNECTED:
+      Serial.printf("[%u] Desconectado!\n", num);
+      break;
+    case WStype_CONNECTED:
+      {
+        IPAddress ip = webSocket.remoteIP(num);
+        Serial.printf("[%u] Conectado desde %d.%d.%d.%d\n", num, ip[0], ip[1], ip[2], ip[3]);
+      }
+      break;
+    case WStype_TEXT:
+      Serial.printf("[%u] Mensaje recibido: %s\n", num, payload);
+
+      // Envía un mensaje de vuelta al cliente
+      webSocket.sendTXT(num, "Mensaje recibido: " + String((char *)payload));
+      break;
+    case WStype_BIN:
+    case WStype_ERROR:
+    case WStype_FRAGMENT_TEXT_START:
+    case WStype_FRAGMENT_BIN_START:
+    case WStype_FRAGMENT:
+    case WStype_FRAGMENT_FIN:
+      break;
+  }
+}
+
 
 void setup() {
   // Inicia la comunicación serial
@@ -94,35 +128,4 @@ void loop() {
   webSocket.loop();
 }
 
-// Función para manejar la solicitud de la página principal
-void handleRoot() {
-  server.send(200, "text/html", htmlPage);
-}
 
-// Función que maneja los eventos del WebSocket
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
-  switch (type) {
-    case WStype_DISCONNECTED:
-      Serial.printf("[%u] Desconectado!\n", num);
-      break;
-    case WStype_CONNECTED:
-      {
-        IPAddress ip = webSocket.remoteIP(num);
-        Serial.printf("[%u] Conectado desde %d.%d.%d.%d\n", num, ip[0], ip[1], ip[2], ip[3]);
-      }
-      break;
-    case WStype_TEXT:
-      Serial.printf("[%u] Mensaje recibido: %s\n", num, payload);
-
-      // Envía un mensaje de vuelta al cliente
-      webSocket.sendTXT(num, "Mensaje recibido: " + String((char *)payload));
-      break;
-    case WStype_BIN:
-    case WStype_ERROR:
-    case WStype_FRAGMENT_TEXT_START:
-    case WStype_FRAGMENT_BIN_START:
-    case WStype_FRAGMENT:
-    case WStype_FRAGMENT_FIN:
-      break;
-  }
-}
