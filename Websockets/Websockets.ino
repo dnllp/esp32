@@ -1,6 +1,6 @@
 #include <WiFi.h>
 #include <WebServer.h>
-#include <WebSocketsServer.h>
+#include <WebSocketsServer_Generic.h>
 
 // Configura tus credenciales de WiFi
 const char* ssid = "ESP32_AP";  // Nombre de la red WiFi creada por el ESP32
